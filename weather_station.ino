@@ -1,13 +1,18 @@
-#include <WiFi.h>
+#include <Arduino.h>
+
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+
+#include <ESP8266HTTPClient.h>
+ 
 #include <WiFiClient.h>
+
+ESP8266WiFiMulti WiFiMulti;
+
 
 #include <DHTesp.h>
 
-#include <dummy.h>
-
-#define DHTPIN 2     // Digital pin connected to the DHT sensor
-#define DHT_READ_RETRIES 3
-
+ESP8266WiFiMulti wifiMulti;
 DHTesp dht;
 
 char myId[] = "1234567890"; //overwritten in setup() below
@@ -18,18 +23,32 @@ char ssid[] = "***REMOVED***";
 char password[] = "***REMOVED***";
 char uploadIP[] = "***REMOVED***";
 char uploadHost[] = "***REMOVED***"; //for Host: header
-int uploadPort = 80;
-String uploadURL = "/dtgraph/api/add/";
+String uploadUrlTemplate = "http://***REMOVED***/dtgraph/api/add/%s?temperature=%s&humidity=%s&delta_seconds=%d";
+int uploadPort = 80;  //not supporting SSL at this time
+String uploadURL = "/dtgraph/api/add/"; //relative URL base.  See printGET() for query string format.
 
 /** 
+ *  Power saving optimization: 
+ *  1) Deep sleep between readings.  WIFI is off. (eg 5 minutes).
+ *  2) Do not submit (and activate WIFI) every reading, instead save readings for later.
+ *  3) Submit every SUBMIT_THRESHOLD readings (eg 3)
+ *  4) If submit fails, continue to save readings up to BUFFER_SIZE, eg 30
+ *  5) When full, allow oldest readings to drop off the end.
+ *  6) Once submit is possible (server/network/wifi comes back), submit all that's queued.
+ */
+
+/**  BUFFER_SIZE:
  *  Keep up to this many readings. Normally this will not exceed SUBMIT_THRESHOLD,
  *  but if we can't submit for any reason, queue up to this many and submit when we can
  *  newer readings displace old ones in the buffer, so only the last BUFFER_SIZE readings
  *  are kept.
  */
 #define BUFFER_SIZE  30
-#define SUBMIT_THRESHOLD 3  //try to submit when we have this many
+#define SUBMIT_THRESHOLD 3  //try to submit when we have this many readings
 #define READING_INTERVAL 5 //deep sleep (s) between taking readings.
+
+#define DHTPIN 2     // Digital pin connected to the DHT sensor
+#define DHT_READ_RETRIES 3
 
 /************ END CONFIGURATION ****************/
 
@@ -71,7 +90,7 @@ void setup() {
 
   //TODO: move this to a method to run after 
     // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
+  wifiMulti.addAP(ssid, password);
   Serial.println("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -108,40 +127,55 @@ void readWeather() {
 
 // Print directly: https://forum.arduino.cc/index.php?topic=44469
 // instead of allocating strings.
-void printGET( Stream & s, float temperature, float humidity, unsigned long time)
-{
-  s.print( F("GET ") );
-  s.print( uploadURL );
-  s.print( myId );
-  s.print( F("?temperature=") );
-  s.print( temperature );
-  s.print( F("&humidity=") );
-  s.print( humidity );
-  s.print( F("&delta_seconds=") );
-  s.print( (millis() - time) / 1000);
-  s.println( F(" HTTP/1.1") );
-
-  s.print( F("Host: ") );
-  s.println( uploadHost );
-  s.println( F("User-Agent: esp8266") );
-  s.println( F("Connection: close") );  //TODO: can we keep-alive for multiple submits? or submit multiple in 1 request?
-}
+//void printGET( Stream & s, float temperature, float humidity, unsigned long time)
+//{
+//  s.print( F("GET ") );
+//  s.print( uploadURL );
+//  s.print( myId );
+//  s.print( F("?temperature=") );
+//  s.print( temperature );
+//  s.print( F("&humidity=") );
+//  s.print( humidity );
+//  s.print( F("&delta_seconds=") );
+//  s.print( (millis() - time) / 1000);
+//  s.println( F(" HTTP/1.1") );
+//
+//  s.print( F("Host: ") );
+//  s.println( uploadHost );
+//  s.println( F("User-Agent: esp8266") );
+//  s.println( F("Connection: close") );  //TODO: can we keep-alive for multiple submits? or submit multiple in 1 request?
+//}
 
 void sendData() {
-  while(getPendingDataCount() > 0) {
-    
-    Serial.print(F("Committing reading number: "));
-    Serial.print(submitIndex);
-    Serial.print(F(": "));
-    Serial.println(readings[submitIndex].temperature);
+  WiFiClient client;
+  if (wifiMulti.run() == WL_CONNECTED) {
+    while(getPendingDataCount() > 0) {
+      
+      Serial.print(F("Committing reading number: "));
+      Serial.print(submitIndex);
+      Serial.print(F(": "));
+      Serial.println(readings[submitIndex].temperature);
 
-    // Print directly: https://forum.arduino.cc/index.php?topic=444696.0
-    //String url = uploadURL + myId + "?temperature=" + temperatures[i] + "&humidity=" + humidities[i] + "&delta_seconds=" + ((BUFFER_SIZE - i - 1) * READING_INTERVAL);
-    printGET(Serial, readings[submitIndex].temperature, readings[submitIndex].humidity, readings[submitIndex].time);
 
-    //TODO: printGET to WIFI also
-    //if success:
-    incrementSubmitIndex();
+      http.begin(client, sprintf(
+        uploadUrlTemplate, 
+        myId, 
+        readings[submitIndex].temperature, 
+        readings[submitIndex].humidity, 
+        (millis() - readings[submitIndex].time) / 1000,
+        humidities[i], 
+      );
+  
+      int httpCode = http.GET();
+      if (httpCode == 200) {
+        //if success:
+        incrementSubmitIndex();
+      } else {
+        Serial.println(sprintf("Unable to submit data, got code %d", httpCode));
+      }
+    }
+  } else {
+    Serial.println(F("Unable to connect to WIFI"));
   }
 }
 
