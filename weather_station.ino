@@ -8,7 +8,7 @@
 #include <WiFiClient.h>
 
 ESP8266WiFiMulti WiFiMulti;
-
+HTTPClient http;
 
 #include <DHTesp.h>
 
@@ -21,11 +21,11 @@ char myId[] = "1234567890"; //overwritten in setup() below
 /************ START CONFIGURATION ****************/
 char ssid[] = "***REMOVED***";
 char password[] = "***REMOVED***";
-char uploadIP[] = "***REMOVED***";
-char uploadHost[] = "***REMOVED***"; //for Host: header
-String uploadUrlTemplate = "http://***REMOVED***/dtgraph/api/add/%s?temperature=%s&humidity=%s&delta_seconds=%d";
-int uploadPort = 80;  //not supporting SSL at this time
-String uploadURL = "/dtgraph/api/add/"; //relative URL base.  See printGET() for query string format.
+//char uploadIP[] = "***REMOVED***";
+//char uploadHost[] = "***REMOVED***"; //for Host: header
+char uploadUrlTemplate[] = "http://***REMOVED***/dtgraph/api/add/%s?temperature=%s&humidity=%s&delta_seconds=%d";
+//int uploadPort = 80;  //not supporting SSL at this time
+//String uploadURL = "/dtgraph/api/add/"; //relative URL base.  See printGET() for query string format.
 
 /** 
  *  Power saving optimization: 
@@ -150,20 +150,28 @@ void sendData() {
   WiFiClient client;
   if (wifiMulti.run() == WL_CONNECTED) {
     while(getPendingDataCount() > 0) {
+      char requestUrl[strlen(uploadUrlTemplate + 50)]; //should be enough for the values 
+      char temperatureAsString[10];
+      char humidityAsString[10];
+      dtostrf(readings[submitIndex].temperature, 4, 2, temperatureAsString);
+      dtostrf(readings[submitIndex].humidity, 4, 2, humidityAsString);
       
       Serial.print(F("Committing reading number: "));
       Serial.print(submitIndex);
       Serial.print(F(": "));
       Serial.println(readings[submitIndex].temperature);
-
-
-      http.begin(client, sprintf(
+      sprintf(
+        requestUrl,
         uploadUrlTemplate, 
         myId, 
-        readings[submitIndex].temperature, 
-        readings[submitIndex].humidity, 
-        (millis() - readings[submitIndex].time) / 1000,
-        humidities[i], 
+        temperatureAsString, 
+        humidityAsString, 
+        (millis() - readings[submitIndex].time) / 1000
+      );
+      
+      http.begin(
+        client, 
+        requestUrl
       );
   
       int httpCode = http.GET();
@@ -171,7 +179,8 @@ void sendData() {
         //if success:
         incrementSubmitIndex();
       } else {
-        Serial.println(sprintf("Unable to submit data, got code %d", httpCode));
+        Serial.print(F("Unable to submit data, got code "));
+        Serial.println(httpCode);
       }
     }
   } else {
