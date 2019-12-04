@@ -2,17 +2,12 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
-
 #include <ESP8266HTTPClient.h>
- 
 #include <WiFiClient.h>
-
-ESP8266WiFiMulti WiFiMulti;
-HTTPClient http;
-
 #include <DHTesp.h>
 
 ESP8266WiFiMulti wifiMulti;
+HTTPClient http;
 DHTesp dht;
 
 char myId[] = "1234567890"; //overwritten in setup() below
@@ -45,8 +40,7 @@ char uploadUrlTemplate[] = "http://***REMOVED***/dtgraph/api/add/%s?temperature=
  */
 #define BUFFER_SIZE  30
 #define SUBMIT_THRESHOLD 3  //try to submit when we have this many readings
-#define READING_INTERVAL 5 //deep sleep (s) between taking readings.
-
+#define READING_INTERVAL 5 //deep sleep (s) between taking readings.  This may require board mods.
 #define DHTPIN 2     // Digital pin connected to the DHT sensor
 #define DHT_READ_RETRIES 3
 
@@ -61,6 +55,7 @@ typedef struct {
 // A fixed sized ringbuffer for readings.
 reading readings[BUFFER_SIZE];
 
+// ring buffer rotating positions:
 int dataIndex = 0;    // slot to store next reading into
 int submitIndex = 0;  // slot to submit (send) next reading from
 
@@ -91,14 +86,16 @@ void setup() {
   //TODO: move this to a method to run after 
     // Connect to Wi-Fi
   wifiMulti.addAP(ssid, password);
-  Serial.println("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println(".");
-  }
-
-  // Print ESP8266 Local IP Address
-  Serial.println(WiFi.localIP());
+  http.setReuse(true);
+  
+//  Serial.println("Connecting to WiFi");
+//  while (WiFi.status() != WL_CONNECTED) {
+//    delay(1000);
+//    Serial.println(".");
+//  }
+//
+//  // Print ESP8266 Local IP Address
+//  Serial.println(WiFi.localIP());
 
 
 }
@@ -149,10 +146,12 @@ void readWeather() {
 void sendData() {
   WiFiClient client;
   if (wifiMulti.run() == WL_CONNECTED) {
+    
+    char requestUrl[strlen(uploadUrlTemplate) + 50]; //should be enough for the values + template
+    char temperatureAsString[6];  //TODO: check if 6 is enough with 4+2
+    char humidityAsString[6];
+    
     while(getPendingDataCount() > 0) {
-      char requestUrl[strlen(uploadUrlTemplate + 50)]; //should be enough for the values 
-      char temperatureAsString[10];
-      char humidityAsString[10];
       dtostrf(readings[submitIndex].temperature, 4, 2, temperatureAsString);
       dtostrf(readings[submitIndex].humidity, 4, 2, humidityAsString);
       
@@ -169,13 +168,9 @@ void sendData() {
         (millis() - readings[submitIndex].time) / 1000
       );
       
-      http.begin(
-        client, 
-        requestUrl
-      );
-  
+      http.begin(client, requestUrl);
       int httpCode = http.GET();
-      if (httpCode == 200) {
+      if (httpCode >= 200 && httpCode < 300) {
         //if success:
         incrementSubmitIndex();
       } else {
