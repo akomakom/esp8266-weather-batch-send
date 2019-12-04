@@ -35,7 +35,19 @@ char uploadUrlTemplate[] = "http://***REMOVED***/dtgraph/api/add/%s?temperature=
  *  6) Once submit is possible (server/network/wifi comes back), submit all that's queued.
  */
 
-/**  BUFFER_SIZE:
+/**  
+ *  Ring Buffer: stores pending (unsubmitted) readings.
+ *      
+ *      This buffer is a fixed-sized array of structs that looks like this:
+ *  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ *     ^Submitted index           ^Data index
+ *     
+ *      We keep on writing data to this array at "Data Index" position, 
+ *      incrementing it in round-robin fashion.
+ *      We try to submit all pending data periodically, incrementing "Submitted Index" in round-robin fashion.
+ *      When the two indices match, there is nothing left to submit.
+ *   
+ *  BUFFER_SIZE:
  *  Keep up to this many readings. Normally this will not exceed SUBMIT_THRESHOLD,
  *  but if we can't submit for any reason, queue up to this many and submit when we can
  *  newer readings displace old ones in the buffer, so only the last BUFFER_SIZE readings
@@ -43,7 +55,7 @@ char uploadUrlTemplate[] = "http://***REMOVED***/dtgraph/api/add/%s?temperature=
  */
 #define BUFFER_SIZE  30
 #define SUBMIT_THRESHOLD 3  //try to submit when we have this many readings
-#define READING_INTERVAL 5 //deep sleep (s) between taking readings.  This may require board mods.
+#define READING_INTERVAL 5 //deep sleep (s) between taking readings.  Deep sleep may require board mods.
 #define DHTPIN 2     // Digital pin connected to the DHT sensor
 #define DHT_READ_RETRIES 3
 
@@ -62,22 +74,33 @@ reading readings[BUFFER_SIZE];
 int dataIndex = 0;    // slot to store next reading into
 int submitIndex = 0;  // slot to submit (send) next reading from
 
+// Recycled Globals used in sendData() to minimize heap allocation
+char requestUrl[sizeof(uploadUrlTemplate) + sizeof(myId) + 30]; //should be enough for the values + template
+char temperatureAsString[6];  //TODO: check if 6 is enough with 4+2
+char humidityAsString[6];
+    
+/** 
+ *  Increment submit index and roll if we're past the end
+ */
 void incrementSubmitIndex() {
   submitIndex++;
   if (submitIndex >= BUFFER_SIZE) {
     submitIndex = 0;
   }
 }
+/** 
+ *  Increment index to store the nextreading and roll if we're past the end
+ */
 void incrementDataIndex() {
   dataIndex++;
   if (dataIndex >= BUFFER_SIZE) {
     dataIndex = 0;
   }
 }
+
 int getPendingDataCount() {
   return abs(dataIndex - submitIndex);
 }
-
 
 void setup() {
   // Serial port for debugging purposes
@@ -89,18 +112,7 @@ void setup() {
   //TODO: move this to a method to run after 
     // Connect to Wi-Fi
   wifiMulti.addAP(ssid, password);
-  http.setReuse(true);
-  
-//  Serial.println("Connecting to WiFi");
-//  while (WiFi.status() != WL_CONNECTED) {
-//    delay(1000);
-//    Serial.println(".");
-//  }
-//
-//  // Print ESP8266 Local IP Address
-//  Serial.println(WiFi.localIP());
-
-
+  http.setReuse(true); //reasonable since we try to batch requests.
 }
 
 void readWeather() {
@@ -149,10 +161,6 @@ void readWeather() {
 void sendData() {
   WiFiClient client;
   if (wifiMulti.run() == WL_CONNECTED) {
-    
-    char requestUrl[strlen(uploadUrlTemplate) + strlen(myId) + 30]; //should be enough for the values + template
-    char temperatureAsString[6];  //TODO: check if 6 is enough with 4+2
-    char humidityAsString[6];
     
     while(getPendingDataCount() > 0) {
       // because arduino sprintf doesn't support %f
