@@ -1,0 +1,44 @@
+/** WIFI **/
+char ssid[] = "***REMOVED***";
+char password[] = "***REMOVED***";
+
+/** Send-to server GET url:
+ *  $1: temperature (as string)
+ *  $2: humidity (as string)
+ *  $3: delta_seconds (time since reading was taken, as int)
+ */
+char uploadUrlTemplate[] = "http://***REMOVED***/dtgraph/api/add/%s?temperature=%s&humidity=%s&delta_seconds=%d";
+
+/** 
+ *  Power saving optimization: 
+ *  1) Deep sleep between readings.  WIFI is off. (eg 5 minutes).
+ *  2) Do not submit (and activate WIFI) every reading, instead save readings for later.
+ *  3) Submit every SUBMIT_THRESHOLD readings (eg 3)
+ *  4) If submit fails, continue to save readings up to BUFFER_SIZE, eg 30
+ *  5) When full, allow oldest readings to drop off the end.
+ *  6) Once submit is possible (server/network/wifi comes back), submit all that's queued.
+ */
+
+/**  
+ *  Ring Buffer: stores pending (unsubmitted) readings.
+ *      
+ *      This buffer is a fixed-sized array of structs that looks like this:
+ *  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ *     ^Submitted index           ^Data index
+ *     
+ *      We keep on writing data to this array at "Data Index" position, 
+ *      incrementing it in round-robin fashion.
+ *      We try to submit all pending data periodically, incrementing "Submitted Index" in round-robin fashion.
+ *      When the two indices match, there is nothing left to submit.
+ *   
+ *  BUFFER_SIZE:
+ *  Keep up to this many readings. Normally this will not exceed SUBMIT_THRESHOLD,
+ *  but if we can't submit for any reason, queue up to this many and submit when we can
+ *  newer readings displace old ones in the buffer, so only the last BUFFER_SIZE readings
+ *  are kept.
+ */
+#define BUFFER_SIZE  30
+#define SUBMIT_THRESHOLD 3  //try to submit when we have this many readings
+#define READING_INTERVAL 5 //deep sleep (s) between taking readings.  Deep sleep may require board mods.
+#define DHTPIN 2     // Digital pin connected to the DHT sensor
+#define DHT_READ_RETRIES 3
