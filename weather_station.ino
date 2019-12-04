@@ -6,6 +6,9 @@
 #include <WiFiClient.h>
 #include <DHTesp.h>
 
+// Because << is prettier than lots of prints
+#include <Streaming.h>
+
 ESP8266WiFiMulti wifiMulti;
 HTTPClient http;
 DHTesp dht;
@@ -147,18 +150,16 @@ void sendData() {
   WiFiClient client;
   if (wifiMulti.run() == WL_CONNECTED) {
     
-    char requestUrl[strlen(uploadUrlTemplate) + 50]; //should be enough for the values + template
+    char requestUrl[strlen(uploadUrlTemplate) + strlen(myId) + 30]; //should be enough for the values + template
     char temperatureAsString[6];  //TODO: check if 6 is enough with 4+2
     char humidityAsString[6];
     
     while(getPendingDataCount() > 0) {
+      // because arduino sprintf doesn't support %f
       dtostrf(readings[submitIndex].temperature, 4, 2, temperatureAsString);
       dtostrf(readings[submitIndex].humidity, 4, 2, humidityAsString);
       
-      Serial.print(F("Committing reading number: "));
-      Serial.print(submitIndex);
-      Serial.print(F(": "));
-      Serial.println(readings[submitIndex].temperature);
+      Serial << F("Committing reading number: ") << submitIndex << F(": ") << readings[submitIndex].temperature << endl;
       sprintf(
         requestUrl,
         uploadUrlTemplate, 
@@ -174,8 +175,7 @@ void sendData() {
         //if success:
         incrementSubmitIndex();
       } else {
-        Serial.print(F("Unable to submit data, got code "));
-        Serial.println(httpCode);
+        Serial << F("Unable to submit data, got code ") << httpCode << endl;
       }
     }
   } else {
