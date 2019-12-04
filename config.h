@@ -40,5 +40,6 @@ char uploadUrlTemplate[] = "http://***REMOVED***/dtgraph/api/add/%s?temperature=
 #define BUFFER_SIZE  30
 #define SUBMIT_THRESHOLD 3  //try to submit when we have this many readings
 #define READING_INTERVAL 5 //deep sleep (s) between taking readings.  Deep sleep may require board mods.
-#define DHTPIN 2     // Digital pin connected to the DHT sensor
+#define DHT_PIN 2     // Digital pin connected to the DHT sensor
 #define DHT_READ_RETRIES 3
+#define DHT_TYPE DHTesp::DHT11 // https://github.com/beegee-tokyo/DHTesp/blob/master/DHTesp.h

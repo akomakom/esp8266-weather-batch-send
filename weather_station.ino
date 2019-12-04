@@ -1,9 +1,12 @@
 #include <Arduino.h>
 
+
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
+
+// For DHT11/DHT22
 #include <DHTesp.h>
 
 // Because << is prettier than lots of prints
@@ -17,9 +20,7 @@ DHTesp dht;
 
 char myId[] = "1234567890"; //overwritten in setup() below
 
-
-
-/************ END CONFIGURATION ****************/
+/************ Configuration is in config.h ****************/
 
 typedef struct {
   float temperature;
@@ -65,7 +66,7 @@ int getPendingDataCount() {
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
-  dht.setup(DHTPIN, DHTesp::DHT11); // Connect DHT sensor to GPIO X
+  dht.setup(DHT_PIN, DHT_TYPE); // Connect DHT sensor to GPIO X
 
   itoa(ESP.getFlashChipId(), myId, 16); //convert int id to hex
 
