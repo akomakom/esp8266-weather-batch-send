@@ -1,8 +1,6 @@
-/** WIFI **/
-char ssid[] = "***REMOVED***";
-char password[] = "***REMOVED***";
 
-/** Send-to server GET url:
+
+/** Send-to server GET url printf string:  ($n is omitted if used in order)
  *  $1: temperature (as string)
  *  $2: humidity (as string)
  *  $3: delta_seconds (time since reading was taken, as int)

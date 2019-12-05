@@ -13,6 +13,7 @@
 #include <Streaming.h>
 
 #include "config.h"
+#include "secure.h"
 
 ESP8266WiFiMulti wifiMulti;
 HTTPClient http;
@@ -70,9 +71,7 @@ void setup() {
 
   itoa(ESP.getFlashChipId(), myId, 16); //convert int id to hex
 
-  //TODO: move this to a method to run after 
-    // Connect to Wi-Fi
-  wifiMulti.addAP(ssid, password);
+  wifiMulti.addAP(WIFI_SSID, WIFI_PASS);
   http.setReuse(true); //reasonable since we try to batch requests.
 }
 
@@ -137,6 +136,7 @@ void sendData() {
         humidityAsString, 
         (millis() - readings[submitIndex].time) / 1000
       );
+      Serial << requestUrl;
       
       http.begin(client, requestUrl);
       int httpCode = http.GET();
