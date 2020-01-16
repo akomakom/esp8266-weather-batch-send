@@ -5,7 +5,7 @@
  *  $2: humidity (as string)
  *  $3: delta_seconds (time since reading was taken, as int)
  */
-char uploadUrlTemplate[] = "http://***REMOVED***/dtgraph/api/add/%s?temperature=%s&humidity=%s&delta_seconds=%d";
+char uploadUrlTemplate[] = "http://***REMOVED***.***REMOVED***.com/dtgraph/api/add/%s?unit=C&temperature=%s&humidity=%s&delta_seconds=%d&voltage=%s";
 
 /** 
  *  Power saving optimization: 
@@ -41,3 +41,5 @@ char uploadUrlTemplate[] = "http://***REMOVED***/dtgraph/api/add/%s?temperature=
 #define DHT_PIN 2     // Digital pin connected to the DHT sensor
 #define DHT_READ_RETRIES 3
 #define DHT_TYPE DHTesp::DHT11 // https://github.com/beegee-tokyo/DHTesp/blob/master/DHTesp.h
+
+#define FAKE_TEMP        0 //when debugging other features, don't use a DHT, fake the temp/humidity

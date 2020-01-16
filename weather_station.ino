@@ -14,6 +14,7 @@
 
 #include "config.h"
 #include "secure.h"
+ADC_MODE(ADC_VCC); //to read supply voltage
 
 ESP8266WiFiMulti wifiMulti;
 HTTPClient http;
@@ -27,6 +28,7 @@ typedef struct {
   float temperature;
   float humidity;
   unsigned long time;
+  float voltage;
 } reading;
 
 // A fixed sized ringbuffer for readings.
@@ -38,9 +40,10 @@ int submitIndex = 0;  // slot to submit (send) next reading from
 
 // Recycled Globals used in sendData() to minimize heap allocation
 char requestUrl[sizeof(uploadUrlTemplate) + sizeof(myId) + 30]; //should be enough for the values + template
-char temperatureAsString[6];  //TODO: check if 6 is enough with 4+2
-char humidityAsString[6];
-    
+char temperatureAsString[8];
+char humidityAsString[8];
+char voltageAsString[8];
+
 /** 
  *  Increment submit index and roll if we're past the end
  */
@@ -73,6 +76,7 @@ void setup() {
 
   wifiMulti.addAP(WIFI_SSID, WIFI_PASS);
   http.setReuse(true); //reasonable since we try to batch requests.
+
 }
 
 void readWeather() {
@@ -82,10 +86,16 @@ void readWeather() {
     // take a reading from the sensor.
     // always put it directly into array
     // if it's a bad reading, we won't advance the array index
-    readings[dataIndex].temperature = dht.getTemperature(); 
-    readings[dataIndex].humidity = dht.getHumidity();
-    readings[dataIndex].time = millis(); 
-    
+    if (FAKE_TEMP) {
+      readings[dataIndex].temperature = 111; 
+      readings[dataIndex].humidity = 100;
+    } else {
+      readings[dataIndex].temperature = dht.getTemperature(); 
+      readings[dataIndex].humidity = dht.getHumidity();
+    }
+    readings[dataIndex].time = millis();
+    readings[dataIndex].voltage = ((float)ESP.getVcc()) / 1000;
+ 
     if (isnan(readings[dataIndex].temperature) || isnan(readings[dataIndex].humidity)) {
       Serial.println(F("Bad temp/humidity reading"));
       retries--;
@@ -126,17 +136,19 @@ void sendData() {
       // because arduino sprintf doesn't support %f
       dtostrf(readings[submitIndex].temperature, 4, 2, temperatureAsString);
       dtostrf(readings[submitIndex].humidity, 4, 2, humidityAsString);
+      dtostrf(readings[submitIndex].voltage, 4, 3, voltageAsString);
       
-      Serial << F("Committing reading number: ") << submitIndex << F(": ") << readings[submitIndex].temperature << endl;
+      Serial << F("Committing reading number: ") << submitIndex << F(": ") << readings[submitIndex].temperature << F(" as string: ") << temperatureAsString << endl;
       sprintf(
         requestUrl,
         uploadUrlTemplate, 
         myId, 
         temperatureAsString, 
         humidityAsString, 
-        (millis() - readings[submitIndex].time) / 1000
+        (millis() - readings[submitIndex].time) / 1000,
+        voltageAsString
       );
-      Serial << requestUrl;
+      Serial << requestUrl << endl;
       
       http.begin(client, requestUrl);
       int httpCode = http.GET();
@@ -145,6 +157,7 @@ void sendData() {
         incrementSubmitIndex();
       } else {
         Serial << F("Unable to submit data, got code ") << httpCode << endl;
+        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
       }
     }
   } else {
@@ -160,6 +173,6 @@ void loop() {
     sendData();
   }
 
-  ESP.deepSleep(READING_INTERVAL * 1000000);
-  
+//  ESP.deepSleep(READING_INTERVAL * 1000000);
+  delay(READING_INTERVAL * 1000);
 }
