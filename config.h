@@ -6,7 +6,7 @@
  *  $3: delta_seconds (time since reading was taken, as int)
  *  $4: battery voltage
  */
-char uploadUrlTemplate[] = "http://***REMOVED***.***REMOVED***.com/dtgraph/api/add/%s?unit=C&temperature=%s&humidity=%s&delta_seconds=%d&voltage=%s&odometer=%d";
+char uploadUrlTemplate[] = "http://YOUR.HOST.OR.IP/some/uri/%s?unit=C&temperature=%s&humidity=%s&delta_seconds=%d&voltage=%s&odometer=%d";
 
 /** 
  *  Power saving optimization: 
