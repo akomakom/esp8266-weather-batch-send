@@ -1,9 +1,11 @@
 
 /** Send-to server GET url printf string:  ($n is omitted if used in order)
- *  $1: temperature (as string)
- *  $2: humidity (as string)
- *  $3: delta_seconds (time since reading was taken, as int)
- *  $4: battery voltage
+ *  $1: sensorId (our unique id)
+ *  $2: temperature (as string)
+ *  $3: humidity (as string)
+ *  $4: delta_seconds (time since reading was taken, as int)
+ *  $5: battery voltage
+ *  $6: odometer (readings count since boot)
  */
 char uploadUrlTemplate[] = "http://YOUR.HOST.OR.IP/some/uri/%s?unit=C&temperature=%s&humidity=%s&delta_seconds=%d&voltage=%s&odometer=%d";
 
@@ -24,4 +26,6 @@ const wifi_login wifi_logins[] = {
   {"SECONDSSID", "SECONDPASSWORD"}
   // and so on...
 };
+
+
 
