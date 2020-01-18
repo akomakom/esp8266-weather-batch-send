@@ -1,14 +1,4 @@
-
-
-/** Send-to server GET url printf string:  ($n is omitted if used in order)
- *  $1: temperature (as string)
- *  $2: humidity (as string)
- *  $3: delta_seconds (time since reading was taken, as int)
- *  $4: battery voltage
- */
-char uploadUrlTemplate[] = "http://YOUR.HOST.OR.IP/some/uri/%s?unit=C&temperature=%s&humidity=%s&delta_seconds=%d&voltage=%s&odometer=%d";
-
-/** 
+/**
  *  Power saving optimization: 
  *  1) Deep sleep between readings.  WIFI is off. (eg 5 minutes).
  *  2) Do not submit (and activate WIFI) every reading, instead save readings for later.
@@ -38,7 +28,7 @@ char uploadUrlTemplate[] = "http://YOUR.HOST.OR.IP/some/uri/%s?unit=C&temperatur
  */
 #define BUFFER_SIZE           60 // 60 is about as much as will fit into RTC memory during deep sleep
 #define SUBMIT_THRESHOLD      3  // try to submit when we have this many readings
-#define READING_INTERVAL      30  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
+#define READING_INTERVAL      300  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
 #define DHT_PIN               2  // Digital pin connected to the DHT sensor
 #define DHT_READ_RETRIES      3
 #define DHT_TYPE              DHTesp::DHT11 // https://github.com/beegee-tokyo/DHTesp/blob/master/DHTesp.h
