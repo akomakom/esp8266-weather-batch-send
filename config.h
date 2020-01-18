@@ -30,10 +30,10 @@
 #define SUBMIT_THRESHOLD      3  // try to submit when we have this many readings
 #define READING_INTERVAL      300  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
 #define DHT_PIN               2  // Digital pin connected to the DHT sensor
-#define DHT_READ_RETRIES      3
+#define DHT_READ_RETRIES      3  // if we're getting a bad reading.
 #define DHT_TYPE              DHTesp::DHT11 // https://github.com/beegee-tokyo/DHTesp/blob/master/DHTesp.h
-#define RTC_STORE_START       0
-#define RTC_BUCKET_SIZE       4 // for index calculations
+#define RTC_STORE_START       0  // offset to use for RTC memory, default should work
+#define RTC_BUCKET_SIZE       4  // for offset calculations
 #define WIFI_CONNECT_RETRIES  30  // try this many times before giving up
 #define WIFI_CONNECT_DELAY    500 // ms to wait between tries
 #define HTTP_RETRIES          3   // if we don't get a 2XX status code, retry request this many times - 1.

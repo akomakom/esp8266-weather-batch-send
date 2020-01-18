@@ -21,8 +21,8 @@ Instead of doing the typical "**deep sleep** then **send reading**" loop, this p
 * Take a reading every **5 minutes** and store it.
 * Send all pending readings every **30 minutes** (when 6 readings are pending).
 
-Doing this reduces the power-on time considerably since waking up to take a reading takes about 0.2ms while sending can take 6+ seconds,
-and of course turning on WIFI takes more power.
+Doing this reduces the power-on time considerably since waking up to take a reading takes about 0.2s while sending can take 6s or more,
+and of course turning on WIFI takes more power.  With the example configuration above, the total on-time in an hour goes from 72s to 14s (worst case scenario).
  
 ## Hardware Requirements
 
