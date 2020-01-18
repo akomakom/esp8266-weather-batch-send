@@ -1,12 +1,12 @@
 # ESP8266 DHT11 Batching Remote Sensor
 
 ## Goal
-* Measure temperature and humidity and send data to some remote server via http.
-* Conserve battery power as much as possible using deep sleep
-* Conserve battery power further by delaying send.
+* Measure temperature and humidity and send data to some remote server via HTTP
+* Conserve battery power as much as possible using **deep sleep**
+* Conserve battery power further by **delaying send**
 
 ## Approach Summary
-Instead of doing the typical **deep sleep**, **send reading** loop, this project batches multiple readings
+Instead of doing the typical "**deep sleep** then **send reading**" loop, this project batches multiple readings
  to save battery power prior to sending all.  
  
  Readings are stored in RTC clock memory between deep sleep cycles,
@@ -26,8 +26,8 @@ and of course turning on WIFI takes more power.
  
 ## Hardware Requirements
 
-* ESP8266 wired for deep sleep (GPIO16 to RST)
-* DHT11/DHT22 properly connected (Note: pre-made DHT11 shields often have an LED that wastes about **4mAh**, removal is recommended)
+* ESP8266 [wired for deep sleep](https://www.instructables.com/id/Enable-DeepSleep-on-an-ESP8266-01/) (GPIO16 to RST)
+* DHT11/DHT22 properly connected (Note: plug-n-play DHT11 shields often have an LED that wastes about **4mAh**, removal is recommended)
 * A way to program the ESP8266.
 * A remote server of some sort that can accept the data via http
 
