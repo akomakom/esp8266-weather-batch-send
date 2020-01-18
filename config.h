@@ -36,7 +36,7 @@ char uploadUrlTemplate[] = "http://***REMOVED***.***REMOVED***.com/dtgraph/api/a
  *  newer readings displace old ones in the buffer, so only the last BUFFER_SIZE readings
  *  are kept.
  */
-#define BUFFER_SIZE           10 // 60 is about as much as will fit into RTC memory during deep sleep
+#define BUFFER_SIZE           60 // 60 is about as much as will fit into RTC memory during deep sleep
 #define SUBMIT_THRESHOLD      3  // try to submit when we have this many readings
 #define READING_INTERVAL      30  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
 #define DHT_PIN               2  // Digital pin connected to the DHT sensor
@@ -47,6 +47,9 @@ char uploadUrlTemplate[] = "http://***REMOVED***.***REMOVED***.com/dtgraph/api/a
 #define WIFI_CONNECT_RETRIES  30  // try this many times before giving up
 #define WIFI_CONNECT_DELAY    500 // ms to wait between tries
 #define HTTP_RETRIES          3   // if we don't get a 2XX status code, retry request this many times - 1.
-#define FAKE_TEMP_WITHOUT_DHT   1 //when Serial is open, don't use a DHT since it's not connected, fake the temp/humidity
 
+// if DHT fails on startup, assume it's not connected, fake the temp/humidity for debugging
+// useful for debugging via USB but should be disabled when going live to prevent junk data
+// from being sent in case DHT fails.
+#define FAKE_TEMP_WITHOUT_DHT 1
 //TODO: change to static IP and no DNS
