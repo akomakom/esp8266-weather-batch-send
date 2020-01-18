@@ -13,12 +13,15 @@ Instead of doing the typical **deep sleep**, **send reading** loop, this project
  not in flash (to prevent repeated write damage).  
  Main memory is lost during deep sleep and cannot be used.
  
+ In case of network or server failures, pending readings will be resubmitted until success. A limited number of most recent readings are kept in the buffer. 
+ When capacity is exceeded, oldest readings are lost.  The maximum capacity (using RTC memory) is about 60.
+ 
 ## Example Configuration
 
 * Take a reading every **5 minutes** and store it.
 * Send all pending readings every **30 minutes** (when 6 readings are pending).
 
-Doing this reduced power-on time considerably since waking up to take a reading takes about 0.2ms while sending can take 6+ seconds,
+Doing this reduces the power-on time considerably since waking up to take a reading takes about 0.2ms while sending can take 6+ seconds,
 and of course turning on WIFI takes more power.
  
 ## Hardware Requirements
@@ -35,3 +38,8 @@ and of course turning on WIFI takes more power.
     * ESP8266 support 
     * DHTEsp library 
     * Streaming library
+    
+
+## TODO
+
+* Use flash memory if storage capacity is exceeded due to network failure.
