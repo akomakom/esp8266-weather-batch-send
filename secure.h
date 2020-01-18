@@ -6,10 +6,7 @@ typedef struct {
 
 
 const wifi_login wifi_logins[] = {
-  {"***REMOVED***", "***REMOVED***"},
-  {"***REMOVED***", "***REMOVED***"},
+  {"FIRSTSSID", "FIRSTPASSWORD"},
+  {"SECONDSSID, "SECONDPASSWORD"}
+  // and so on...
 };
-
-
-//#define WIFI_SSID "***REMOVED***"
-//#define WIFI_PASS "***REMOVED***"
