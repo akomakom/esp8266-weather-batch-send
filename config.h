@@ -38,14 +38,15 @@ char uploadUrlTemplate[] = "http://***REMOVED***.***REMOVED***.com/dtgraph/api/a
  */
 #define BUFFER_SIZE           10 // 60 is about as much as will fit into RTC memory during deep sleep
 #define SUBMIT_THRESHOLD      3  // try to submit when we have this many readings
-#define READING_INTERVAL      5  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
+#define READING_INTERVAL      30  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
 #define DHT_PIN               2  // Digital pin connected to the DHT sensor
 #define DHT_READ_RETRIES      3
 #define DHT_TYPE              DHTesp::DHT11 // https://github.com/beegee-tokyo/DHTesp/blob/master/DHTesp.h
 #define RTC_STORE_START       0
 #define RTC_BUCKET_SIZE       4 // for index calculations
-#define WIFI_CONNECT_RETRIES  3
-#define HTTP_RETRIES          3
+#define WIFI_CONNECT_RETRIES  30  // try this many times before giving up
+#define WIFI_CONNECT_DELAY    500 // ms to wait between tries
+#define HTTP_RETRIES          3   // if we don't get a 2XX status code, retry request this many times - 1.
 #define FAKE_TEMP_WITHOUT_DHT   1 //when Serial is open, don't use a DHT since it's not connected, fake the temp/humidity
 
 //TODO: change to static IP and no DNS

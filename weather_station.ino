@@ -225,18 +225,19 @@ void sendData() {
   WiFiClient client;
   int retries = WIFI_CONNECT_RETRIES;
 
-  Serial << F("Will send reading: ") << readings[submitIndex].temperature << endl;
+  Serial << F("Wifi connecting, will send reading (first): ") << readings[submitIndex].temperature << endl;
 
+  // get our supply voltage ready for the url
   dtostrf(((float)ESP.getVcc()) / 1000, 4, 3, voltageAsString);
 
-  while(wifiMulti.run() != WL_CONNECTED && retries > 0) {
-    Serial << F("Not connected, waiting ... ");
-    delay(5000);
+  uint8_t wifiState;
+  while((wifiState = wifiMulti.run()) != WL_CONNECTED && retries > 0) {
+    Serial << F(" ... ");
+    delay(500);
     retries--;
   }
 
   retries = HTTP_RETRIES;
-  uint8_t wifiState = wifiMulti.run();
   if (wifiState == WL_CONNECTED) {
     
     while(getPendingDataCount() > 0 && retries > 0) {
@@ -262,7 +263,7 @@ void sendData() {
         if (httpCode >= 200 && httpCode < 300) {
           //if success:
           incrementSubmitIndex();
-          retries++; // something's working, we can afford an extra retry if things go bad later.
+          retries = HTTP_RETRIES; // something's working, reset retries.
         } else {
           Serial << F("Unable to submit data, got code ") << httpCode << endl;
           Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
@@ -288,7 +289,5 @@ void loop() {
   }
 
   saveStateToRTC();
-  Serial << "Invoking deep sleep now for " << READING_INTERVAL << endl; //this print seems to prevent panic crashes???
   ESP.deepSleep(READING_INTERVAL * 1000000);
-//   delay(READING_INTERVAL * 1000);
 }
