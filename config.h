@@ -35,11 +35,14 @@ char uploadUrlTemplate[] = "http://***REMOVED***.***REMOVED***.com/dtgraph/api/a
  *  newer readings displace old ones in the buffer, so only the last BUFFER_SIZE readings
  *  are kept.
  */
-#define BUFFER_SIZE  30
+#define BUFFER_SIZE      30
 #define SUBMIT_THRESHOLD 3  //try to submit when we have this many readings
 #define READING_INTERVAL 5 //deep sleep (s) between taking readings.  Deep sleep may require board mods.
-#define DHT_PIN 2     // Digital pin connected to the DHT sensor
+#define DHT_PIN          2     // Digital pin connected to the DHT sensor
 #define DHT_READ_RETRIES 3
 #define DHT_TYPE DHTesp::DHT11 // https://github.com/beegee-tokyo/DHTesp/blob/master/DHTesp.h
-
+#define RTC_STORE_START  0
+#define RTC_BUCKET_SIZE  4 // for index calculations
 #define FAKE_TEMP        0 //when debugging other features, don't use a DHT, fake the temp/humidity
+
+//TODO: change to static IP and no DNS
