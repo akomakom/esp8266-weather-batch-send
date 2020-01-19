@@ -262,8 +262,8 @@ void sendData() {
 
 /**
  * Note: this loop() method is executed only once, since deep sleep causes a reset.
- * It's kept separate from config() for clarity.
- * config() contains initialization half, loop() contains real work.
+ * It's kept separate from setup() for clarity.
+ * setup() contains initialization half, loop() contains real work.
  */
 void loop() {
   Serial << F("Begin loop now.  Pending data count: ") << getPendingDataCount() << endl;
