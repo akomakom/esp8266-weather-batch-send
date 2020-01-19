@@ -26,9 +26,25 @@
  *  newer readings displace old ones in the buffer, so only the last BUFFER_SIZE readings
  *  are kept.
  */
-#define BUFFER_SIZE           60 // 60 is about as much as will fit into RTC memory during deep sleep
-#define SUBMIT_THRESHOLD      3  // try to submit when we have this many readings
-#define READING_INTERVAL      300  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
+
+// comment out this line for testing config (else)
+#define REAL_MODE
+
+#ifdef REAL_MODE
+  #define BUFFER_SIZE           60 // 60 is about as much as will fit into RTC memory during deep sleep
+  #define SUBMIT_THRESHOLD      6  // try to submit when we have this many readings
+  #define READING_INTERVAL      300  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
+  #define FAKE_TEMP_WITHOUT_DHT 0
+#else
+  #define BUFFER_SIZE           10 // 60 is about as much as will fit into RTC memory during deep sleep
+  #define SUBMIT_THRESHOLD      3  // try to submit when we have this many readings
+  #define READING_INTERVAL      5  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
+// if DHT fails on startup, assume it's not connected, fake the temp/humidity for debugging
+// useful for debugging via USB but should be disabled when going live to prevent junk data
+// from being sent in case DHT fails.
+  #define FAKE_TEMP_WITHOUT_DHT 1
+#endif
+
 #define DHT_PIN               2  // Digital pin connected to the DHT sensor
 #define DHT_READ_RETRIES      3  // if we're getting a bad reading.
 #define DHT_TYPE              DHTesp::DHT11 // https://github.com/beegee-tokyo/DHTesp/blob/master/DHTesp.h
@@ -38,8 +54,5 @@
 #define WIFI_CONNECT_DELAY    500 // ms to wait between tries
 #define HTTP_RETRIES          3   // if we don't get a 2XX status code, retry request this many times - 1.
 
-// if DHT fails on startup, assume it's not connected, fake the temp/humidity for debugging
-// useful for debugging via USB but should be disabled when going live to prevent junk data
-// from being sent in case DHT fails.
-#define FAKE_TEMP_WITHOUT_DHT 1
+
 //TODO: change to static IP and no DNS

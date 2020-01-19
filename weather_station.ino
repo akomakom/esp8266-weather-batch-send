@@ -25,6 +25,8 @@ DHTesp dht;
 char myId[] = "1234567890"; //overwritten in setup() below
 
 /************ Configuration is in config.h ****************/
+// Since we're storing an array of these in RTC mem, size matters
+// Currently it's 4+4, so 500/8 = 60 max items
 typedef struct {
   float temperature;
   float humidity;
@@ -42,8 +44,6 @@ char requestUrl[sizeof(uploadUrlTemplate) + sizeof(myId) + 30]; //should be enou
 char temperatureAsString[8];
 char humidityAsString[8];
 char voltageAsString[8];
-
-bool fakeMode = false;
 
 int getPendingDataCount() {
   if (dataIndex >= submitIndex) {
@@ -130,58 +130,30 @@ void saveStateToRTC() {
       Serial << F("Saving to RTC: ") << readings[i].temperature << endl;
       index += sizeof(reading)/RTC_BUCKET_SIZE;
     }
-    //index += sizeof(readings);
-}
-
-// Attempt to determine whether a DHT is connected
-void initDHT() {
-  dht.setup(DHT_PIN, DHT_TYPE); // Connect DHT sensor to GPIO X
-  uint32_t temperature =  dht.getTemperature();
-  fakeMode = FAKE_TEMP_WITHOUT_DHT && (dht.getStatus() != dht.ERROR_NONE);
-  Serial << F("Intializing.  Checking DHT: ") << temperature << endl;
-  if (fakeMode) {
-    Serial << F("Using fake temperature data, no DHT detected") << endl;
-  }
 }
 
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
+  int memFootprint = (3*sizeof(uint32_t) + BUFFER_SIZE * sizeof(reading));
+  Serial << F("Expected RTC Memory Usage: ") << memFootprint << F("/512 bytes") << endl;
+  if (memFootprint > 512) {
+    Serial << F("Memory usage excessive!!!! Expect a crash") << endl;
+  }
 
-  initDHT();
-
+  dht.setup(DHT_PIN, DHT_TYPE); // Connect DHT sensor to GPIO X
   itoa(ESP.getFlashChipId(), myId, 16); //convert int id to hex
 
   for (int i = 0 ; i < (sizeof(wifi_logins) / sizeof(wifi_logins[0])) ; i++ ) {
     wifiMulti.addAP(wifi_logins[i].u, wifi_logins[i].p);
   }
 
-//   wifiMulti.addAP(WIFI_SSID, WIFI_PASS);
   http.setReuse(true); //reasonable since we try to batch requests.
 
-//   rst_info *resetInfo;
-//   resetInfo = ESP.getResetInfoPtr();
-//   Serial.println((*resetInfo).reason);
-//
-//   // This is useless, it will always happen, ESP8266 wakes from deep sleep using reset
-//   // so initial start is identical to deep sleep wake.
-//   // see checksum in saveStateToRTC for a solution.
-//   if (resetInfo->reason == REASON_DEEP_SLEEP_AWAKE) {
-//     Serial << F("Detected deep sleep wake, loading state: ") << resetInfo->reason << ESP.getResetReason() << endl;
-//     loadStateFromRTC();
-//   }
-
-  loadStateFromRTC(); //no need to check if it's a deep sleep wake, it always is.
+  loadStateFromRTC(); //no need to check if it's a deep sleep wake, it always is, even on first boot.
 }
 
 void readWeather() {
-  if (fakeMode) {
-    readings[dataIndex].temperature = dataIndex + 77;
-    readings[dataIndex].humidity = random(1,100);
-    incrementDataIndex(); //advance the array index for next time, only on success
-    return;
-  }
-
   int retries = DHT_READ_RETRIES; // try DHT reading this many times if bad
   while(retries > 0) {
     // take a reading from the sensor.
@@ -190,8 +162,16 @@ void readWeather() {
     readings[dataIndex].temperature = dht.getTemperature();
     readings[dataIndex].humidity = dht.getHumidity();
     if (dht.getStatus() != dht.ERROR_NONE || isnan(readings[dataIndex].temperature) || isnan(readings[dataIndex].humidity)) {
-      Serial.println(F("Bad temp/humidity reading"));
-      retries--;
+      if (FAKE_TEMP_WITHOUT_DHT) {
+        Serial << F("Using fake temperature data, no DHT detected") << endl;
+        readings[dataIndex].temperature = dataIndex + 55; //predictable consecutive fake temperature
+        readings[dataIndex].humidity = random(1,100);
+        incrementDataIndex(); //advance the array index for next time, only on success
+        retries = 0;
+      } else {
+        Serial.println(F("Bad temp/humidity reading, retrying"));
+        retries--;
+      }
     } else {
       //good reading
       retries = 0; //end loop
@@ -251,7 +231,7 @@ void sendData() {
         uploadUrlTemplate, 
         myId,
         temperatureAsString, 
-        humidityAsString, 
+        humidityAsString,
         (getPendingDataCount() - 1) * READING_INTERVAL,  //With deep sleep we can't rely on time measurement
         voltageAsString,
         odometer - getPendingDataCount() + 1
@@ -280,6 +260,11 @@ void sendData() {
   }
 }
 
+/**
+ * Note: this loop() method is executed only once, since deep sleep causes a reset.
+ * It's kept separate from config() for clarity.
+ * config() contains initialization half, loop() contains real work.
+ */
 void loop() {
   Serial << F("Begin loop now.  Pending data count: ") << getPendingDataCount() << endl;
   readWeather();
