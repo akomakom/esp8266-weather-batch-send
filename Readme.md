@@ -5,7 +5,7 @@ Monitors temperature/humidity and periodically sends data (in batches) to a serv
 ## Goal
 * Measure temperature and humidity and send data to some remote server via HTTP
 * Conserve battery power as much as possible using **deep sleep**
-* Conserve battery power further by **delaying send**
+* Conserve battery power further by **batching**, sending all accumulated data periodically. 
 
 ## Approach Summary
 Instead of doing the typical "**deep sleep** then **send reading**" loop, this project batches multiple readings
