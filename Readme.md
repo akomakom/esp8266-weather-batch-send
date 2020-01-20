@@ -16,7 +16,7 @@ Instead of doing the typical "**deep sleep** then **send reading**" loop, this p
  Main memory is lost during deep sleep and cannot be used.
  
  In case of network or server failures, pending readings will be resubmitted until success. A limited number of most recent readings are kept in the buffer. 
- When capacity is exceeded, oldest readings are lost.  The maximum capacity (using RTC memory) is about 60.
+ When capacity is exceeded, oldest readings are lost.  The maximum capacity (using RTC memory) is about 60 (this can theoretically be doubled if humidity is not needed)
  
 ## Example Configuration
 
