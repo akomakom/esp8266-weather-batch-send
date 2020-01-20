@@ -1,5 +1,7 @@
 # ESP8266 DHT11 Batching Remote Weather Sensor
 
+Monitors temperature/humidity and periodically sends data (in batches) to a server
+
 ## Goal
 * Measure temperature and humidity and send data to some remote server via HTTP
 * Conserve battery power as much as possible using **deep sleep**
