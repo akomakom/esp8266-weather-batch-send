@@ -1,4 +1,4 @@
-# ESP8266 DHT11 Batching Remote Sensor
+# ESP8266 DHT11 Batching Remote Weather Sensor
 
 ## Goal
 * Measure temperature and humidity and send data to some remote server via HTTP
