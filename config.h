@@ -34,25 +34,31 @@
   #define BUFFER_SIZE           60 // 60 is about as much as will fit into RTC memory during deep sleep
   #define SUBMIT_THRESHOLD      6  // try to submit when we have this many readings
   #define READING_INTERVAL      300  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
-  #define FAKE_TEMP_WITHOUT_DHT 0
+  #define FAKE_TEMP_WITHOUT_SENSOR 0
 #else
   #define BUFFER_SIZE           10 // 60 is about as much as will fit into RTC memory during deep sleep
   #define SUBMIT_THRESHOLD      3  // try to submit when we have this many readings
   #define READING_INTERVAL      5  // deep sleep (s) between taking readings.  Deep sleep may require board mods.
-// if DHT fails on startup, assume it's not connected, fake the temp/humidity for debugging
-// useful for debugging via USB but should be disabled when going live to prevent junk data
-// from being sent in case DHT fails.
-  #define FAKE_TEMP_WITHOUT_DHT 1
+// if the temperature sensor doesn't work, assume it's not connected,
+// fake the temp/humidity for debugging
+// useful for debugging via USB but should be disabled when going live
+// to prevent junk data from being sent in case DHT fails.
+  #define FAKE_TEMP_WITHOUT_SENSOR 1
 #endif
 
-#define DHT_PIN               2  // Digital pin connected to the DHT sensor
-#define DHT_READ_RETRIES      3  // if we're getting a bad reading.
+
+#define SENSOR_DHT            1  // DHT11,22 or similar using DHTesp library.  Specific type set below
+#define SENSOR_DS18B20        2  // DS18B20 using the DS18B20 library
+
+//Pick one:
+#define SENSOR                SENSOR_DS18B20
+//#define SENSOR                SENSOR_DHT
+
+#define SENSOR_PIN            2  // Digital pin connected to the DHT sensor
+#define SENSOR_READ_RETRIES   3  // if we're getting a bad reading.
 #define DHT_TYPE              DHTesp::DHT11 // https://github.com/beegee-tokyo/DHTesp/blob/master/DHTesp.h
 #define RTC_STORE_START       0  // offset to use for RTC memory, default should work
 #define RTC_BUCKET_SIZE       4  // for offset calculations
 #define WIFI_CONNECT_RETRIES  30  // try this many times before giving up
 #define WIFI_CONNECT_DELAY    500 // ms to wait between tries
 #define HTTP_RETRIES          3   // if we don't get a 2XX status code, retry request this many times - 1.
-
-
-//TODO: change to static IP and no DNS

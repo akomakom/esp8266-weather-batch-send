@@ -36,8 +36,9 @@ and of course turning on WIFI takes more power.  With the example configuration 
 * Arduino IDE (tested with 1.8.10)
 * Installed in Arduino IDE:
     * ESP8266 support 
-    * DHTEsp library 
-    * Streaming library
+    * **DHTEsp** library (if using a DHT)
+    * **[DS18B20](https://github.com/matmunk/DS18B2)** library (if using a DS18B20) 
+    * **Streaming** library
     
 
 ## TODO
