@@ -51,3 +51,30 @@ and of course turning on WIFI takes more power.  With the example configuration 
 ## TODO
 
 * Use flash memory if storage capacity is exceeded due to network failure.
+
+
+## What actually happens
+
+With the default configuration, the ESP will store 5 readings, then wake up the 6th time, take one more reading, 
+and submit all 6.  If successful, it will go to sleep with 0 pending requests (nothing left to submit).
+
+Webserver logs to illustrate how the ESP sends data using the default URL format are below.
+Note the batches with **delta_seconds** (time offset) value to indicate age of reading. 
+The ESP need not waste its power on querying NTP and knowing what time it is, age is all that's needed.
+
+```
+192.168.1.204 - - [22/Jan/2020:08:31:02 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.90&humidity=55.00&delta_seconds=1500&voltage=3.117&odometer=511 HTTP/1.1" 200 250 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:08:31:02 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.20&humidity=39.00&delta_seconds=1200&voltage=3.117&odometer=512 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:08:31:02 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.10&humidity=40.00&delta_seconds=900&voltage=3.117&odometer=513 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:08:31:02 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.10&humidity=40.00&delta_seconds=600&voltage=3.117&odometer=514 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:08:31:03 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.10&humidity=40.00&delta_seconds=300&voltage=3.117&odometer=515 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:08:31:03 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.10&humidity=40.00&delta_seconds=0&voltage=3.117&odometer=516 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+
+192.168.1.204 - - [22/Jan/2020:09:00:52 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.50&humidity=55.00&delta_seconds=1500&voltage=3.117&odometer=517 HTTP/1.1" 200 250 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:09:00:53 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.20&humidity=40.00&delta_seconds=1200&voltage=3.117&odometer=518 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:09:00:53 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.20&humidity=40.00&delta_seconds=900&voltage=3.117&odometer=519 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:09:00:53 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.20&humidity=40.00&delta_seconds=600&voltage=3.117&odometer=520 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:09:00:53 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.20&humidity=40.00&delta_seconds=300&voltage=3.117&odometer=521 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+192.168.1.204 - - [22/Jan/2020:09:00:53 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.30&humidity=40.00&delta_seconds=0&voltage=3.117&odometer=522 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
+
+```
