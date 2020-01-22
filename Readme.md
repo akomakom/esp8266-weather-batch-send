@@ -1,9 +1,11 @@
-# ESP8266 DHT11/DS18B20 Batching Remote Sensor
+# ESP8266 DHT11/DS18B20 Batching Remote Weather Sensor
+
+Monitors temperature/humidity and periodically sends data (in batches) to a server
 
 ## Goal
 * Measure temperature and humidity and send data to some remote server via HTTP
 * Conserve battery power as much as possible using **deep sleep**
-* Conserve battery power further by **delaying send**
+* Conserve battery power further by **batching**, sending all accumulated data periodically. 
 
 ## Approach Summary
 Instead of doing the typical "**deep sleep** then **send reading**" loop, this project batches multiple readings
@@ -14,7 +16,7 @@ Instead of doing the typical "**deep sleep** then **send reading**" loop, this p
  Main memory is lost during deep sleep and cannot be used.
  
  In case of network or server failures, pending readings will be resubmitted until success. A limited number of most recent readings are kept in the buffer. 
- When capacity is exceeded, oldest readings are lost.  The maximum capacity (using RTC memory) is about 60.
+ When capacity is exceeded, oldest readings are lost.  The maximum capacity (using RTC memory) is about 60 (this can theoretically be doubled if humidity is not needed)
  
 ## Example Configuration
 
