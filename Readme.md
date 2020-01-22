@@ -1,4 +1,4 @@
-# ESP8266 DHT11 Batching Remote Sensor
+# ESP8266 DHT11/DS18B20 Batching Remote Sensor
 
 ## Goal
 * Measure temperature and humidity and send data to some remote server via HTTP
@@ -22,14 +22,19 @@ Instead of doing the typical "**deep sleep** then **send reading**" loop, this p
 * Send all pending readings every **30 minutes** (when 6 readings are pending).
 
 Doing this reduces the power-on time considerably since waking up to take a reading takes about 0.2s while sending can take 6s or more,
-and of course turning on WIFI takes more power.  With the example configuration above, the total on-time in an hour goes from 72s to 14s (worst case scenario).
+and of course turning on WIFI takes more power.  With the example configuration above, the total on-time in an hour goes from 72s to 14s (worst case scenario, less with a static IP).
  
 ## Hardware Requirements
 
 * ESP8266 [wired for deep sleep](https://www.instructables.com/id/Enable-DeepSleep-on-an-ESP8266-01/) (GPIO16 to RST)
-* DHT11/DHT22 properly connected (Note: plug-n-play DHT11 shields often have an LED that wastes about **4mAh**, removal is recommended)
+* DHT11/DHT22/DS18B20 properly connected 
+
+    Note: plug-n-play DHT11 shields often have an LED that wastes about **4mAh**, removal is recommended.
+    In fact, directly connecting the sensor to the ESP is even better if you don't need a regulator.
 * A way to program the ESP8266.
-* A remote server of some sort that can accept the data via http
+* A remote server of some sort that can accept the data via http.
+
+    This project uses a GET request, but POST/PUT would be a minor code change.
 
 ## Software Requirements
 
