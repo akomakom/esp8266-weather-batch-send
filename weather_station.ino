@@ -19,7 +19,6 @@ extern "C" {
 // For DHT11/DHT22
   #include <DHTesp.h>
   DHTesp dht;
-  dht.setup(SENSOR_PIN, DHT_TYPE); // Connect DHT sensor to GPIO X
 #elif SENSOR == SENSOR_DS18B20
   #include <DS18B20.h>
   DS18B20 ds(SENSOR_PIN);
@@ -192,6 +191,10 @@ void setup() {
     Serial << F("Memory usage excessive!!!! Expect a crash") << endl;
   }
 
+  #if SENSOR == SENSOR_DHT
+  dht.setup(SENSOR_PIN, DHT_TYPE); // Connect DHT sensor to GPIO X
+  #endif
+
   Serial << F("Using MAC as unique id: ") << WiFi.macAddress() << endl;
 
   http.setReuse(true); //reasonable since we try to batch requests.
@@ -199,6 +202,10 @@ void setup() {
   loadStateFromRTC(); //no need to check if it's a deep sleep wake, it always is, even on first boot.
 }
 
+
+boolean isVoltageOK() {
+  return (ESP.getVcc() >= MIN_VOLTAGE);
+}
 
 
 /**
@@ -208,6 +215,10 @@ void setup() {
  */
 void readWeather() {
   int retries = SENSOR_READ_RETRIES; // try DHT reading this many times if bad
+  if (!isVoltageOK()) {
+    Serial << F("Voltage too low, not reading temperature");
+    return;
+  }
   while(retries > 0) {
 
     bool readingOK = false;

@@ -62,3 +62,6 @@
 #define WIFI_CONNECT_RETRIES  30  // try this many times before giving up
 #define WIFI_CONNECT_DELAY    500 // ms to wait between tries
 #define HTTP_RETRIES          3   // if we don't get a 2XX status code, retry request this many times - 1.
+#define MIN_VOLTAGE           2450  // below this voltage, assume that temp readings will be bad and give up
+                                    // DS18B20 is all over the place at <=2.44 (returns random numbers)
+                                    // value is in millivolts
