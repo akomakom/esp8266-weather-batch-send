@@ -7,6 +7,7 @@ Monitors temperature/humidity and periodically sends data (in batches) to a serv
 * Conserve battery power as much as possible using **deep sleep**
 * Conserve battery power further by **batching**, sending all accumulated data periodically. 
 
+
 ## Approach Summary
 Instead of doing the typical "**deep sleep** then **send reading**" loop, this project batches multiple readings
  to save battery power prior to sending all.  
@@ -18,8 +19,15 @@ Instead of doing the typical "**deep sleep** then **send reading**" loop, this p
  In case of network or server failures, pending readings will be resubmitted until success. A limited number of most recent readings are kept in the buffer. 
  When capacity is exceeded, oldest readings are lost.  The maximum capacity (using RTC memory) is about 60 (this can theoretically be doubled if humidity is not needed)
  
+## Battery Performance
+With the default settings, battery life from 2 AA alkaline batteries can be expected to significantly exceed 6 months (TBD). 
+
+I had one ESP-01 on which I forgot to remove the power LED and it lasted 6 months.
+The rest are still at 2.8V.  (2.45V is where things go bad)
+
 ## Example Configuration
 
+(This is the configuration default)
 * Take a reading every **5 minutes** and store it.
 * Send all pending readings every **30 minutes** (when 6 readings are pending).
 
@@ -28,15 +36,16 @@ and of course turning on WIFI takes more power.  With the example configuration 
  
 ## Hardware Requirements
 
-* ESP8266 [wired for deep sleep](https://www.instructables.com/id/Enable-DeepSleep-on-an-ESP8266-01/) (GPIO16 to RST)
+* ESP8266 that is:
+   * [wired for deep sleep](https://www.instructables.com/id/Enable-DeepSleep-on-an-ESP8266-01/) (GPIO16 to RST)
+   * Power LED physically disabled (optional, but saves 0.3mA+)
 * DHT11/DHT22/DS18B20 properly connected 
 
     Note: plug-n-play DHT11 shields often have an LED that wastes about **4mAh**, removal is recommended.
     In fact, directly connecting the sensor to the ESP is even better if you don't need a regulator.
-* A way to program the ESP8266.
-* A remote server of some sort that can accept the data via http.
-
-    This project uses a GET request, but POST/PUT would be a minor code change.
+* A way to program the ESP8266 (UART, etc)
+* A remote server of some sort that can accept the data from your ESP via http.
+    * This project uses a GET request, but POST/PUT would be a minor code change.
 
 ## Software Requirements
 
@@ -47,11 +56,6 @@ and of course turning on WIFI takes more power.  With the example configuration 
     * **[DS18B20](https://github.com/matmunk/DS18B2)** library (if using a DS18B20) 
     * **Streaming** library
     
-
-## TODO
-
-* Use flash memory if storage capacity is exceeded due to network failure.
-
 
 ## What actually happens
 
@@ -78,3 +82,10 @@ The ESP need not waste its power on querying NTP and knowing what time it is, ag
 192.168.1.204 - - [22/Jan/2020:09:00:53 -0500] "GET /dtgraph/api/add/5C:CF:7F:01:02:03?unit=C&temperature=17.30&humidity=40.00&delta_seconds=0&voltage=3.117&odometer=522 HTTP/1.1" 200 249 "-" "ESP8266HTTPClient"
 
 ```
+
+
+## TODO
+
+* Use flash memory if storage capacity is exceeded due to network failure.
+* Use flash memory to auto detect and save sensor type (remove from config)
+* Use flash memory to somehow store static IP (remove from config)
