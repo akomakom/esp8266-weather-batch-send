@@ -56,8 +56,10 @@ and of course turning on WIFI takes more power.  With the example configuration 
     * **DHTEsp** library (if using a DHT)
     * **[DS18B20](https://github.com/matmunk/DS18B2)** library (if using a DS18B20) 
     * **Streaming** library
-    
+## Visuals
 
+![Project using a DHT11](esp-sender-dht.jpg)
+![Project using a DS18B20)(esp-sender-ds18b20.jpg)
 ## What actually happens
 
 With the default configuration, the ESP will store 5 readings, then wake up the 6th time, take one more reading, 
