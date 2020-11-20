@@ -20,10 +20,11 @@ Instead of doing the typical "**deep sleep** then **send reading**" loop, this p
  When capacity is exceeded, oldest readings are lost.  The maximum capacity (using RTC memory) is about 60 (this can theoretically be doubled if humidity is not needed)
  
 ## Battery Performance
-With the default settings, battery life from 2 AA alkaline batteries can be expected to significantly exceed 6 months (TBD). 
+With the default settings and power led removed, battery life from 2 AA alkaline batteries can be expected to last about **9 months**, perhaps a bit less outdoors.
 
 I had one ESP-01 on which I forgot to remove the power LED and it lasted 6 months.
-The rest are still at 2.8V.  (2.45V is where things go bad)
+Two other units lasted 9-10 months each despite having different sensors.  
+(2.45V is where things go bad with the DS18B20, the DHT seems to stop working around 2.6V)
 
 ## Example Configuration
 
