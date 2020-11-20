@@ -60,7 +60,7 @@ and of course turning on WIFI takes more power.  With the example configuration 
 
 ![Project using a DHT11](esp-sender-dht.jpg)
 
-![Project using a DS18B20)(esp-sender-ds18b20.jpg)
+![Project using a DS18B20](esp-sender-ds18b20.jpg)
 
 ## What actually happens
 
