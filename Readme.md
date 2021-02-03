@@ -14,7 +14,6 @@ Instead of doing the typical "**deep sleep** then **send reading**" loop, this p
  
  Readings are stored in RTC clock memory between deep sleep cycles,
  not in flash (to prevent repeated write damage).  
- Main memory is lost during deep sleep and cannot be used.
  
  In case of network or server failures, pending readings will be resubmitted until success. A limited number of most recent readings are kept in the buffer. 
  When capacity is exceeded, oldest readings are lost.  The maximum capacity (using RTC memory) is about 60 (this can theoretically be doubled if humidity is not needed)
@@ -28,7 +27,7 @@ Two other units lasted 9-10 months each despite having different sensors.
 
 ## Example Configuration
 
-(This is the configuration default)
+(This is the configuration default, see `config.h`)
 * Take a reading every **5 minutes** and store it.
 * Send all pending readings every **30 minutes** (when 6 readings are pending).
 
