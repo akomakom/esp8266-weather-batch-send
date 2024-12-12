@@ -16,10 +16,11 @@ extern "C" {
 
 // Include only the required library:
 #if SENSOR == SENSOR_DHT
-// For DHT11/DHT22
-  #include <DHTesp.h>
-  DHTesp dht;
+  // For DHT11/DHT22 https://github.com/adafruit/DHT-sensor-library/
+  #include <DHT.h>
+  DHT dht(SENSOR_PIN, DHT_TYPE);
 #elif SENSOR == SENSOR_DS18B20
+  // https://github.com/matmunk/DS18B20
   #include <DS18B20.h>
   DS18B20 ds(SENSOR_PIN);
 #endif
@@ -192,7 +193,8 @@ void setup() {
   }
 
   #if SENSOR == SENSOR_DHT
-  dht.setup(SENSOR_PIN, DHT_TYPE); // Connect DHT sensor to GPIO X
+//  dht.setup(SENSOR_PIN, DHT_TYPE); // Connect DHT sensor to GPIO X
+    dht.begin();
   #endif
 
   Serial << F("Using MAC as unique id: ") << WiFi.macAddress() << endl;
@@ -224,9 +226,9 @@ void readWeather() {
     bool readingOK = false;
 
     #if SENSOR == SENSOR_DHT
-      readings[dataIndex].temperature = dht.getTemperature();
-      readings[dataIndex].humidity = dht.getHumidity();
-      readingOK = dht.getStatus() == dht.ERROR_NONE && !isnan(readings[dataIndex].temperature) && !isnan(readings[dataIndex].humidity);
+      readings[dataIndex].temperature = dht.readTemperature();
+      readings[dataIndex].humidity = dht.readHumidity();
+      readingOK = !isnan(readings[dataIndex].temperature) && !isnan(readings[dataIndex].humidity);
     #elif SENSOR == SENSOR_DS18B20
       if (ds.selectNext()) {
         readings[dataIndex].temperature = ds.getTempC();

@@ -51,12 +51,12 @@
 #define SENSOR_DS18B20        2  // DS18B20 using the DS18B20 library
 
 //Pick one:
-#define SENSOR                SENSOR_DS18B20
-//#define SENSOR                SENSOR_DHT
+//#define SENSOR                SENSOR_DS18B20
+#define SENSOR                SENSOR_DHT
 
-#define SENSOR_PIN            2  // Digital pin connected to the DHT sensor
+#define SENSOR_PIN            4  // Digital pin connected to the DHT sensor
 #define SENSOR_READ_RETRIES   3  // if we're getting a bad reading.
-#define DHT_TYPE              DHTesp::DHT11 // https://github.com/beegee-tokyo/DHTesp/blob/master/DHTesp.h
+#define DHT_TYPE              DHT11 // Constant from adafruit library
 #define RTC_STORE_START       0  // offset to use for RTC memory, default should work
 #define RTC_BUCKET_SIZE       4  // for offset calculations
 #define WIFI_CONNECT_RETRIES  30  // try this many times before giving up

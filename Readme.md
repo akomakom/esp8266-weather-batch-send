@@ -52,9 +52,9 @@ and of course turning on WIFI takes more power.  With the example configuration 
 * Arduino IDE (tested with 1.8.10)
 * Installed in Arduino IDE:
     * ESP8266 support 
-    * **DHTEsp** library (if using a DHT)
+    * **[DHT](https://github.com/adafruit/DHT-sensor-library/)** library (if using a DHT)
     * **[DS18B20](https://github.com/matmunk/DS18B2)** library (if using a DS18B20) 
-    * **Streaming** library
+    * **[Streaming](https://github.com/janelia-arduino/Streaming)** library
 ## Visuals
 
 ![Project using a DHT11](esp-sender-dht.jpg)
